@@ -42,6 +42,13 @@ stop_switch_pin = None
 pin_step_direction = 7
 pin_step_active = 6
 
+# Servo Control Variables (added from legacy)
+servo_pins = [8, 11, 10, 9, 12]  # Digital pins for servos
+servo_direction = [0, 0, 0, 0, 0]  # 0=stop, 1=clockwise, 2=counterclockwise
+servo_speed = [1, 1, 1, 1, 1]     # Speed in degrees per step
+servo_default_positions = [52, 200, 0, 160, 0]  # Home positions for each servo
+exit_flag = False  # Flag to stop all threads
+
 # Exporting Variables
 export_timestamp = []
 export_diameter = []
@@ -66,3 +73,7 @@ deformation_mm_entry = None
 live_sensor_value_entry = None
 delta_pressure_entry = None
 gripper_closing_time_entry = None
+
+# Servo Entry Variables (new)
+# Entry widgets for servo speeds
+servo_speed_entries = [None, None, None, None, None]

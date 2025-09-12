@@ -1,5 +1,6 @@
 # from tkinter import *
 # Explicit imports to satisfy Flake8
+from tkinter import ttk
 import matplotlib.pyplot as plt
 from pathlib import Path
 import random
@@ -23,9 +24,10 @@ from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage
 # Custom Imports
 import g
 from boardSetup import boardSetup
-from utils import create_entry_value, entry_callback, handleGripperButton, resetGripper, autoSetSensorIdle, clearExportVariables, exportData, close_action
+from utils import create_entry_value, entry_callback, handleGripperButton, resetGripper, autoSetSensorIdle, clearExportVariables, exportData, close_action, handleServoButton, setServoSpeed, resetServos
 from runSensor import runSensorLoop
 from runGripper import runGripperLoop
+from runServo import runServoLoop
 
 
 current_datetime = datetime.datetime.now()
@@ -86,7 +88,7 @@ button_reset = Button(
     image=button_image_reset,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_reset clicked"),
+    command=lambda: resetServos(),  # Reset servos instead of just printing
     relief="flat"
 )
 button_reset.place(
@@ -545,6 +547,10 @@ servo_speed_5_entry.place(
 )
 
 
+g.servo_speed_entries[4] = servo_speed_5_entry
+
+servo_speed_5_entry.insert(0, g.servo_speed[4])
+
 entry_image_2 = PhotoImage(
     file=relative_to_assets("entry_2.png"))
 entry_bg_2 = canvas.create_image(
@@ -977,9 +983,10 @@ button_9 = Button(
     image=button_image_9,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_9 clicked"),
     relief="flat"
 )
+button_9.bind("<Button-1>", lambda event: handleServoButton(4, 1))
+button_9.bind("<ButtonRelease-1>", lambda event: handleServoButton(4, 0))
 button_9.place(
     x=92.0,
     y=561.0,
@@ -987,15 +994,18 @@ button_9.place(
     height=35.0
 )
 
-button_image_10 = PhotoImage(
-    file=relative_to_assets("button_10.png"))
+button_image_10 = PhotoImage(file=relative_to_assets("button_10.png"))
+
 button_10 = Button(
     image=button_image_10,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_10 clicked"),
     relief="flat"
 )
+button_10.bind("<Button-1>", lambda event: handleServoButton(1, 1))
+button_10.bind("<ButtonRelease-1>", lambda event: handleServoButton(1, 0))
+
+
 button_10.place(
     x=92.0,
     y=411.0,
@@ -1003,15 +1013,33 @@ button_10.place(
     height=35.0
 )
 
+# Speed slider for overall control (from legacy code)
+
+
+def slider_changed(event):
+    speed = slider.get()
+    setServoSpeed(99, speed)  # 99 means all servos
+
+
+style = ttk.Style()
+style.configure("Custom.Horizontal.TScale", troughcolor="white")
+
+slider = ttk.Scale(window, from_=0, to=50, orient=tk.HORIZONTAL,
+                   length=253, command=slider_changed, style="Custom.Horizontal.TScale")
+slider.set(1)
+slider.place(x=92, y=625)
+
+
 button_image_11 = PhotoImage(
     file=relative_to_assets("button_11.png"))
 button_11 = Button(
     image=button_image_11,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_11 clicked"),
     relief="flat"
 )
+button_11.bind("<Button-1>", lambda event: handleServoButton(1, 2))
+button_11.bind("<ButtonRelease-1>", lambda event: handleServoButton(1, 0))
 button_11.place(
     x=182.0,
     y=411.0,
@@ -1025,9 +1053,10 @@ button_12 = Button(
     image=button_image_12,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_12 clicked"),
     relief="flat"
 )
+button_12.bind("<Button-1>", lambda event: handleServoButton(4, 2))
+button_12.bind("<ButtonRelease-1>", lambda event: handleServoButton(4, 0))
 button_12.place(
     x=182.0,
     y=561.0,
@@ -1041,9 +1070,10 @@ button_13 = Button(
     image=button_image_13,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_13 clicked"),
     relief="flat"
 )
+button_13.bind("<Button-1>", lambda event: handleServoButton(3, 2))
+button_13.bind("<ButtonRelease-1>", lambda event: handleServoButton(3, 0))
 button_13.place(
     x=182.0,
     y=511.0,
@@ -1057,9 +1087,10 @@ button_14 = Button(
     image=button_image_14,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_14 clicked"),
     relief="flat"
 )
+button_14.bind("<Button-1>", lambda event: handleServoButton(3, 1))
+button_14.bind("<ButtonRelease-1>", lambda event: handleServoButton(3, 0))
 button_14.place(
     x=92.0,
     y=511.0,
@@ -1073,9 +1104,10 @@ button_15 = Button(
     image=button_image_15,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_15 clicked"),
     relief="flat"
 )
+button_15.bind("<Button-1>", lambda event: handleServoButton(2, 1))
+button_15.bind("<ButtonRelease-1>", lambda event: handleServoButton(2, 0))
 button_15.place(
     x=92.0,
     y=461.0,
@@ -1089,9 +1121,11 @@ button_16 = Button(
     image=button_image_16,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_16 clicked"),
     relief="flat"
 )
+button_16.bind("<Button-1>", lambda event: handleServoButton(0, 1))
+button_16.bind("<ButtonRelease-1>", lambda event: handleServoButton(0, 0))
+
 button_16.place(
     x=92.0,
     y=361.0,
@@ -1105,9 +1139,10 @@ button_17 = Button(
     image=button_image_17,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_17 clicked"),
     relief="flat"
 )
+button_17.bind("<Button-1>", lambda event: handleServoButton(0, 2))
+button_17.bind("<ButtonRelease-1>", lambda event: handleServoButton(0, 0))
 button_17.place(
     x=182.0,
     y=361.0,
@@ -1121,9 +1156,10 @@ button_18 = Button(
     image=button_image_18,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_18 clicked"),
     relief="flat"
 )
+button_18.bind("<Button-1>", lambda event: handleServoButton(2, 2))
+button_18.bind("<ButtonRelease-1>", lambda event: handleServoButton(2, 0))
 button_18.place(
     x=182.0,
     y=461.0,
@@ -1192,6 +1228,11 @@ sensor_thread.start()
 gripper_thread = threading.Thread(target=runGripperLoop)
 gripper_thread.daemon = True
 gripper_thread.start()
+
+# Start the servo control thread
+servo_thread = threading.Thread(target=runServoLoop)
+servo_thread.daemon = True
+servo_thread.start()
 
 # window.resizable(False, False)
 window.mainloop()

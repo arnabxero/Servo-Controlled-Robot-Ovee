@@ -1,9 +1,6 @@
 import g
 import time
 
-# Custom Imports
-from utils import preciseSleep, calculate_custom_delay
-
 
 def moveServo(servo_index):
     """Move a specific servo based on its direction and speed"""
@@ -27,7 +24,7 @@ def moveServo(servo_index):
                 f"Servo {servo_index} moving to {cur_loc} degrees counterclockwise")
 
         # Constrain servo position to 0-180 degrees
-        cur_loc = max(0, min(cur_loc, 180))
+        cur_loc = max(0, min(cur_loc, 240))
         g.board.digital[g.servo_pins[servo_index]].write(cur_loc)
 
     except Exception as e:
@@ -80,7 +77,9 @@ def initializeServos():
     try:
         for i, pin in enumerate(g.servo_pins):
             g.board.digital[pin].mode = g.board.SERVO
-            g.board.digital[pin].write(g.servo_default_positions[i])
+            g.board.digital[pin].write(
+                g.servo_default_positions[i])
+
             print(
                 f"Servo {i} (pin {pin}) initialized to {g.servo_default_positions[i]} degrees")
 

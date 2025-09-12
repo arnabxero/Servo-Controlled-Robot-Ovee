@@ -4,6 +4,7 @@ import time
 import tkinter as tk
 import csv
 import os
+from runServo import setServoToHome
 
 
 def entry_callback(entry_name, var):
@@ -38,6 +39,50 @@ def handleGripperButton(direction, motorActive):
     # UpdateLogger
 
 
+# New servo control functions
+def handleServoButton(servo_num, direction):
+    """Handle servo movement button press"""
+    g.servo_direction[servo_num] = direction
+    print(f"Servo {servo_num} is now moving direction {direction}")
+    # UpdateConsole
+    # UpdateLogger
+
+
+def setServoSpeed(servo_num, speed):
+    """Set speed for a specific servo or all servos"""
+    try:
+        speed = float(speed)
+
+        if servo_num != 99:  # Specific servo
+            g.servo_speed[servo_num] = speed
+            print(f"Servo {servo_num} speed set to {speed} degrees per step")
+        else:  # All servos (servo_num == 99)
+            for i in range(len(g.servo_speed)):
+                g.servo_speed[i] = speed
+            print(f"All servos speed set to {speed} degrees per step")
+            # Update entry fields if they exist
+            refreshServoSpeedEntries()
+
+        # UpdateConsole
+        # UpdateLogger
+
+    except ValueError:
+        print(f"Invalid speed value: {speed}")
+        # UpdateConsole
+        # UpdateLogger
+
+
+def refreshServoSpeedEntries():
+    """Refresh all servo speed entry fields with current values"""
+    try:
+        for i, entry in enumerate(g.servo_speed_entries):
+            if entry is not None:
+                entry.delete(0, tk.END)
+                entry.insert(0, str(g.servo_speed[i]))
+    except:
+        print("Minor Warning - Unable to refresh servo speed entries")
+
+
 def preciseSleep(duration):
     """Busy-wait sleep for more accurate timing."""
     end_time = time.monotonic() + duration
@@ -64,6 +109,16 @@ def resetGripper():
     g.gripper_starting_time = 0.0
     g.gripper_start_time_flag = False
     print("Resetting Gripper Parameters...")
+    # UpdateConsole
+    # UpdateLogger
+
+
+def resetServos():
+    """Reset all servo parameters to default values"""
+    g.servo_direction = [0, 0, 0, 0, 0]
+    g.servo_speed = [1, 1, 1, 1, 1]
+    print("Resetting Servo Parameters...")
+    refreshServoSpeedEntries()
     # UpdateConsole
     # UpdateLogger
 
@@ -127,5 +182,13 @@ def exportData(array1, array2, array3, array4, array5, array6):
 
 
 def close_action():
+    """Handle application closure without moving servos"""
     print("Exiting...")
+    g.exit_flag = True
+
+    # Move servos to home positions
+    setServoToHome()
+
+    # Don't move servos - leave them where they are
+    print("Servos left in current positions")
     os._exit(0)

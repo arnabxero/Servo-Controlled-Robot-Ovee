@@ -113,14 +113,18 @@ def boardSetup():
         import time
         time.sleep(1)
 
-        # Setup pins
+        # Setup sensor and switch pins
         g.sensor = g.board.get_pin('a:2:i')  # Analog pin 2 for sensor
         g.stop_switch_pin = g.board.get_pin(
             'd:4:i')  # Digital pin 4 for stop switch
 
+        # Setup servo pins
+        setupServos()
+
         print("Arduino connected successfully!")
         print("Sensor pin: A2")
         print("Stop switch pin: D4")
+        print(f"Servo pins: {g.servo_pins}")
         return True  # Return True to indicate success
 
     except Exception as e:
@@ -135,12 +139,28 @@ def boardSetup():
     ######################## Arduino Setup ########################
 
 
+def setupServos():
+    """Initialize servo pins and set them to default positions"""
+    try:
+        for i, pin in enumerate(g.servo_pins):
+            g.board.digital[pin].mode = pyfirmata.SERVO
+            g.board.digital[pin].write(
+                g.servo_default_positions[i])
+            print(
+                f"Servo {i} (pin {pin}) initialized to {g.servo_default_positions[i]} degrees")
+        print("All servo pins initialized successfully!")
+        return True
+    except Exception as e:
+        print(f"Error setting up servo pins: {e}")
+        return False
+
+
 def test_connection():
     """Test function to verify Arduino connection and sensor readings"""
     if not boardSetup():
         return
 
-    print("\nTesting sensor readings...")
+    print("\nTesting sensor readings and servo positions...")
     print("Press Ctrl+C to stop")
 
     try:
@@ -152,6 +172,16 @@ def test_connection():
             print(f"Sensor (A2): {sensor_value:.4f if sensor_value else 'None'} | "
                   f"Switch (D4): {switch_value}")
 
+            # Test servo positions
+            servo_positions = []
+            for j, pin in enumerate(g.servo_pins):
+                try:
+                    pos = g.board.digital[pin].read()
+                    servo_positions.append(f"S{j}: {pos if pos else 'None'}")
+                except:
+                    servo_positions.append(f"S{j}: Error")
+
+            print(f"Servos: {' | '.join(servo_positions)}")
             time.sleep(0.1)
     except KeyboardInterrupt:
         print("\nTest stopped by user")
