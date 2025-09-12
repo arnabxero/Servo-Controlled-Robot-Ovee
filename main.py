@@ -29,6 +29,7 @@ from runSensor import runSensorLoop
 from runGripper import runGripperLoop
 from runServo import runServoLoop
 from graphs import create_graphs
+from utils import autoCalibrateDiameter
 
 
 current_datetime = datetime.datetime.now()
@@ -45,6 +46,10 @@ def relative_to_assets(path: str) -> Path:
 
 
 boardSetup()
+
+# Start auto-calibration
+if g.board:  # Only if board connection successful
+    autoCalibrateDiameter()
 
 window = Tk()
 

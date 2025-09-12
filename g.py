@@ -30,10 +30,18 @@ gripper_active = False
 aftertouch_runtime = 0.0
 gripper_steps = 0
 
+# NEW: Step to diameter conversion factor
+# mm per step - this will convert steps to diameter change
+step_dia_mm_factor = 0.0055090095259956
+
 # Gripper Run Time Variables
 gripper_closing_time = 0.0
 gripper_starting_time = 0.0
 gripper_start_time_flag = False
+
+# NEW: Auto-calibration variables
+auto_calibration_complete = False
+max_diameter_mm = 53.0  # Your measured full open jaw diameter
 
 # Gripper Stop Switch
 stop_switch_pin = None
@@ -58,7 +66,7 @@ export_sensor_value = []
 export_closing_time = []
 
 # Calculation Variables
-diameter_in_mm = 0.0
+diameter_in_mm = 53.0  # Start with max diameter
 delta_pressure = 0.0
 deformation_in_mm = 0.0
 

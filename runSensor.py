@@ -2,17 +2,31 @@ import g
 import tkinter as tk
 import time
 import datetime
-from calculations import calcDeltaPressure, calcDiameterFromRunTime, calcDeformationMM
+from calculations import calcDeltaPressure, calcDiameterFromSteps, calcDeformationMM
 
 
 def runSensorLoop():
     while True:
 
         # Check if stop switch is triggered
-        if ((g.gripper_direction == 2) and (g.stop_switch_pin.read() == True) and (g.gripper_active == True)):
+        if g.stop_switch_pin and g.stop_switch_pin.read() == True and g.gripper_active == True:
+            if g.gripper_direction == 2:  # Opening direction
+                if not g.auto_calibration_complete:
+                    # Auto-calibration complete
+                    print(
+                        "Auto-calibration complete! Gripper is now at fully open position.")
+                    print(
+                        f"Step counter reset to 0. Max diameter set to {g.max_diameter_mm} mm")
+                    g.auto_calibration_complete = True
+                    g.gripper_steps = 0  # Reset step counter at fully open position
+                    g.diameter_in_mm = g.max_diameter_mm
+                else:
+                    print("Stop Switch Activated - Gripper fully opened")
+            else:
+                print("Stop Switch Activated")
+
             g.gripper_direction = 0
             g.gripper_active = False
-            print("Stop Switch Activated")
             # UpdateConsole
             # UpdateLogger
 
@@ -21,7 +35,6 @@ def runSensorLoop():
         except:
             print("Warning: Sensor Read Error")
             None
-
             # UpdateConsole
 
         if ((g.sensor_value >= (g.sensor_idle_value + g.sensor_touch_value)) and (g.sensor_touch_flag == False) and (g.gripper_direction == 1)):
@@ -43,7 +56,8 @@ def runSensorLoop():
             0, str("{:.4f}".format(g.delta_pressure)))
         g.export_delta_pressure.append(g.delta_pressure)
 
-        g.diameter_in_mm = calcDiameterFromRunTime()
+        # Use the new step-based calculation
+        g.diameter_in_mm = calcDiameterFromSteps()
         g.diameter_mm_entry.delete(0, tk.END)
         g.diameter_mm_entry.insert(0, str("{:.4f}".format(g.diameter_in_mm)))
         g.export_diameter.append(g.diameter_in_mm)

@@ -28,10 +28,90 @@ def create_entry_value(entry_name, callback):
     return var
 
 
+def checkStopSwitchStatus():
+    """Check if stop switch is already pressed at startup"""
+    try:
+        if g.stop_switch_pin and g.stop_switch_pin.read() == True:
+            return True
+        return False
+    except Exception as e:
+        print(f"Error reading stop switch: {e}")
+        return False
+
+
+def autoCalibrateDiameter():
+    """Auto-calibrate the gripper by opening to full extent until stop switch is hit"""
+    print("Starting auto-calibration...")
+
+    # Give Arduino pins time to stabilize after connection
+    print("Waiting for Arduino to stabilize...")
+    time.sleep(2)  # Wait 2 seconds for pins to stabilize
+
+    # Now check if stop switch is already pressed
+    if checkStopSwitchStatus():
+        print("Stop switch is already pressed!")
+        print("Gripper appears to be already at fully open position.")
+        print("Skipping auto-calibration and setting reference point.")
+
+        # Set calibration as complete without moving
+        g.auto_calibration_complete = True
+        g.gripper_steps = 0  # Reset step counter at current position
+        g.diameter_in_mm = g.max_diameter_mm
+        g.gripper_direction = 0
+        g.gripper_active = False
+
+        print(
+            f"Auto-calibration complete! Step counter set to 0. Max diameter set to {g.max_diameter_mm} mm")
+        return
+
+    print("Stop switch is not pressed. Opening gripper to full extent...")
+
+    # Save current speed
+    original_speed = g.gripper_speed
+
+    # Set high speed for calibration (much faster)
+    g.gripper_speed = 500  # 5x faster than normal
+
+    # Reset step counter and set initial diameter
+    g.gripper_steps = 0
+    g.diameter_in_mm = g.max_diameter_mm
+
+    # Start opening the gripper
+    g.gripper_direction = 2  # Opening direction
+    g.gripper_active = True
+    g.sensor_touch_flag = False
+
+    print(
+        f"Gripper opening at high speed ({g.gripper_speed})... waiting for stop switch activation")
+
+    # Wait for auto-calibration to complete with timeout
+    start_time = time.time()
+    timeout = 30  # 30 second timeout
+
+    while not g.auto_calibration_complete:
+        time.sleep(0.1)  # Check every 100ms
+
+        # Safety timeout
+        if time.time() - start_time > timeout:
+            print("WARNING: Auto-calibration timeout! Stop switch may not be working.")
+            print("Stopping gripper and setting calibration as complete.")
+            g.gripper_active = False
+            g.gripper_direction = 0
+            g.auto_calibration_complete = True
+            break
+
+    # Restore original speed after calibration
+    g.gripper_speed = original_speed
+    print(f"Auto-calibration complete! Speed restored to {original_speed}")
+
+
 def handleGripperButton(direction, motorActive):
+    # Only allow manual control if auto-calibration is complete
+    if not g.auto_calibration_complete and direction != 2:
+        print("Auto-calibration in progress. Manual control disabled until calibration complete.")
+        return
+
     g.gripper_direction = direction
-    # if (g.gripper_direction != 2):
-    #     g.sensor_touch_flag = False
     g.sensor_touch_flag = False
     g.gripper_active = motorActive
     print("Gripper Direction: " + str(g.gripper_direction))
@@ -99,6 +179,10 @@ def calculate_custom_delay(speed):
 
 
 def resetGripper():
+    if not g.auto_calibration_complete:
+        print("Cannot reset gripper during auto-calibration")
+        return
+
     g.gripper_speed = 100
     g.gripper_direction = 0
     g.gripper_active = False
@@ -108,6 +192,10 @@ def resetGripper():
     g.time_of_touch = 0
     g.gripper_starting_time = 0.0
     g.gripper_start_time_flag = False
+
+    # Reset diameter to max (fully open)
+    g.diameter_in_mm = g.max_diameter_mm
+
     print("Resetting Gripper Parameters...")
     # UpdateConsole
     # UpdateLogger
