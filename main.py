@@ -28,6 +28,7 @@ from utils import create_entry_value, entry_callback, handleGripperButton, reset
 from runSensor import runSensorLoop
 from runGripper import runGripperLoop
 from runServo import runServoLoop
+from graphs import create_graphs
 
 
 current_datetime = datetime.datetime.now()
@@ -180,8 +181,11 @@ clear_export_button = Button(
     relief="flat"
 )
 
+# clear_export_button.bind(
+#     "<Button-1>", lambda event: clearExportVariables())
+
 clear_export_button.bind(
-    "<Button-1>", lambda event: clearExportVariables())
+    "<Button-1>", lambda event: [clearExportVariables(), graphs.clear_data()])
 
 clear_export_button.place(
     x=385.0,
@@ -1220,6 +1224,9 @@ canvas.create_rectangle(
     735.0,
     fill="#000000",
     outline="")
+
+# Create the real-time graphs
+graphs = create_graphs(window)
 
 sensor_thread = threading.Thread(target=runSensorLoop)
 sensor_thread.daemon = True
