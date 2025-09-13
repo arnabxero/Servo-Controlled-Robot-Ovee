@@ -1,5 +1,6 @@
 import g
 import time
+from console_logger import log_console
 
 
 def moveServo(servo_index):
@@ -13,15 +14,21 @@ def moveServo(servo_index):
             cur_loc = 90  # Default to middle position if read fails
             print(
                 f"Warning: Could not read servo {servo_index} position, using default")
+            log_console(
+                f"Warning: Could not read servo {servo_index + 1} position, using default")
 
         if g.servo_direction[servo_index] == 1:
             cur_loc += g.servo_speed[servo_index]
             print(f"Servo {servo_index} moving to {cur_loc} degrees clockwise")
+            log_console(
+                f"Servo {servo_index + 1} moving to {cur_loc}° clockwise")
 
         elif g.servo_direction[servo_index] == 2:
             cur_loc -= g.servo_speed[servo_index]
             print(
                 f"Servo {servo_index} moving to {cur_loc} degrees counterclockwise")
+            log_console(
+                f"Servo {servo_index + 1} moving to {cur_loc}° counterclockwise")
 
         # Constrain servo position to 0-180 degrees
         cur_loc = max(0, min(cur_loc, 240))
@@ -29,6 +36,7 @@ def moveServo(servo_index):
 
     except Exception as e:
         print(f"Unable to write to servo {servo_index}: {e}")
+        log_console(f"Error: Unable to write to servo {servo_index + 1}: {e}")
 
 
 def runServoLoop():

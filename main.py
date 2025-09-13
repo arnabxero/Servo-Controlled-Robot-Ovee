@@ -30,6 +30,7 @@ from runGripper import runGripperLoop
 from runServo import runServoLoop
 from graphs import create_graphs
 from utils import autoCalibrateDiameter
+from console_logger import logger, log_command, log_console
 
 
 current_datetime = datetime.datetime.now()
@@ -1232,6 +1233,9 @@ canvas.create_rectangle(
 
 # Create the real-time graphs
 graphs = create_graphs(window)
+
+logger.setup_widgets(canvas)
+
 
 sensor_thread = threading.Thread(target=runSensorLoop)
 sensor_thread.daemon = True

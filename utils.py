@@ -5,6 +5,7 @@ import tkinter as tk
 import csv
 import os
 from runServo import setServoToHome
+from console_logger import logger, log_command, log_console
 
 
 def entry_callback(entry_name, var):
@@ -86,7 +87,7 @@ def autoCalibrateDiameter():
 
     # Wait for auto-calibration to complete with timeout
     start_time = time.time()
-    timeout = 30  # 30 second timeout
+    timeout = 5  # 30 second timeout
 
     while not g.auto_calibration_complete:
         time.sleep(0.1)  # Check every 100ms
@@ -106,9 +107,10 @@ def autoCalibrateDiameter():
 
 
 def handleGripperButton(direction, motorActive):
-    # Only allow manual control if auto-calibration is complete
-    if not g.auto_calibration_complete and direction != 2:
-        print("Auto-calibration in progress. Manual control disabled until calibration complete.")
+    # Allow opening during auto-calibration, but restrict closing until calibration is done
+    # Only block closing (direction 1)
+    if not g.auto_calibration_complete and direction == 1:
+        print("Auto-calibration in progress. Closing disabled until calibration complete.")
         return
 
     g.gripper_direction = direction
@@ -119,13 +121,17 @@ def handleGripperButton(direction, motorActive):
     # UpdateLogger
 
 
-# New servo control functions
 def handleServoButton(servo_num, direction):
     """Handle servo movement button press"""
     g.servo_direction[servo_num] = direction
+
+    # Log the command
+    direction_names = {0: "STOP", 1: "CLOCKWISE", 2: "COUNTERCLOCKWISE"}
+    command = f"Servo {servo_num + 1} {direction_names.get(direction, direction)}"
+    log_command(command)
+
     print(f"Servo {servo_num} is now moving direction {direction}")
-    # UpdateConsole
-    # UpdateLogger
+    log_console(f"Servo {servo_num + 1} is now moving direction {direction}")
 
 
 def setServoSpeed(servo_num, speed):
@@ -181,6 +187,7 @@ def calculate_custom_delay(speed):
 def resetGripper():
     if not g.auto_calibration_complete:
         print("Cannot reset gripper during auto-calibration")
+        log_console("Cannot reset gripper during auto-calibration")
         return
 
     g.gripper_speed = 100
@@ -196,19 +203,20 @@ def resetGripper():
     # Reset diameter to max (fully open)
     g.diameter_in_mm = g.max_diameter_mm
 
+    log_command("Reset Gripper Parameters")
     print("Resetting Gripper Parameters...")
-    # UpdateConsole
-    # UpdateLogger
+    log_console("Resetting Gripper Parameters...")
 
 
 def resetServos():
     """Reset all servo parameters to default values"""
     g.servo_direction = [0, 0, 0, 0, 0]
     g.servo_speed = [1, 1, 1, 1, 1]
+
+    log_command("Reset All Servo Parameters")
     print("Resetting Servo Parameters...")
+    log_console("Resetting Servo Parameters...")
     refreshServoSpeedEntries()
-    # UpdateConsole
-    # UpdateLogger
 
 
 def autoSetSensorIdle(sensor_idle_value_entry):
@@ -216,11 +224,12 @@ def autoSetSensorIdle(sensor_idle_value_entry):
     sensor_idle_value_entry.delete(0, tk.END)
     sensor_idle_value_entry.insert(
         0, str("{:.4f}".format(g.sensor_idle_value)))
-    # Resolve: Invalid Value on sensor_idle_value error
+
+    command = f"Auto-set sensor idle value to {g.sensor_idle_value:.4f}"
+    log_command(command)
 
     print("Sensor Idle Value Set to: "+str(g.sensor_idle_value))
-    # UpdateConsole
-    # UpdateLogger
+    log_console(f"Sensor Idle Value Set to: {g.sensor_idle_value}")
 
 
 def clearExportVariables():

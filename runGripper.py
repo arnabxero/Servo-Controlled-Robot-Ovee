@@ -3,6 +3,7 @@ import time
 
 # Custom Imports
 from utils import preciseSleep, calculate_custom_delay
+from console_logger import log_console
 
 
 def moveMotor():
@@ -20,13 +21,15 @@ def moveMotor():
         preciseSleep(0.0001)
         g.board.digital[g.pin_step_active].write(0)
 
-        print(
-            f"Step Count: {g.gripper_steps}, Direction: {g.gripper_direction}")
-        # UpdateConsole
+        # Log less frequently to avoid spam (every 50 steps)
+        if g.gripper_steps % 50 == 0:
+            print(
+                f"Step Count: {g.gripper_steps}, Direction: {g.gripper_direction}")
+            log_console(f"Gripper step count: {g.gripper_steps}")
 
     except Exception as e:
         print(f"Unable to write to Arduino board: {e}")
-        # UpdateConsole
+        log_console(f"Error: Unable to write to Arduino board: {e}")
 
 
 def runGripperLoop():

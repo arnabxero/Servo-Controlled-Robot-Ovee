@@ -8,22 +8,23 @@ from calculations import calcDeltaPressure, calcDiameterFromSteps, calcDeformati
 def runSensorLoop():
     while True:
 
-        # Check if stop switch is triggered
-        if g.stop_switch_pin and g.stop_switch_pin.read() == True and g.gripper_active == True:
-            if g.gripper_direction == 2:  # Opening direction
-                if not g.auto_calibration_complete:
-                    # Auto-calibration complete
-                    print(
-                        "Auto-calibration complete! Gripper is now at fully open position.")
-                    print(
-                        f"Step counter reset to 0. Max diameter set to {g.max_diameter_mm} mm")
-                    g.auto_calibration_complete = True
-                    g.gripper_steps = 0  # Reset step counter at fully open position
-                    g.diameter_in_mm = g.max_diameter_mm
-                else:
-                    print("Stop Switch Activated - Gripper fully opened")
+        # Check if stop switch is triggered - ONLY when opening (direction 2)
+        if (g.stop_switch_pin and
+            g.stop_switch_pin.read() == True and
+            g.gripper_active == True and
+                g.gripper_direction == 2):  # Only check when opening
+
+            if not g.auto_calibration_complete:
+                # Auto-calibration complete
+                print(
+                    "Auto-calibration complete! Gripper is now at fully open position.")
+                print(
+                    f"Step counter reset to 0. Max diameter set to {g.max_diameter_mm} mm")
+                g.auto_calibration_complete = True
+                g.gripper_steps = 0  # Reset step counter at fully open position
+                g.diameter_in_mm = g.max_diameter_mm
             else:
-                print("Stop Switch Activated")
+                print("Stop Switch Activated - Gripper fully opened")
 
             g.gripper_direction = 0
             g.gripper_active = False
