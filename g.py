@@ -89,3 +89,10 @@ final_value_entry = None
 # Servo Entry Variables (new)
 # Entry widgets for servo speeds
 servo_speed_entries = [None, None, None, None, None]
+
+# Graph calculation variables
+pressure_slope = 0.0
+previous_pressure = 0.0
+previous_deformation_sqrt = 0.0
+pressure_history = []
+deformation_sqrt_history = []

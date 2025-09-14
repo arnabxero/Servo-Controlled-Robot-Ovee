@@ -5,6 +5,62 @@ import datetime
 from calculations import calcDeltaPressure, calcDiameterFromSteps, calcDeformationMM
 
 
+def calculate_pressure_slope():
+    """Calculate slope between pressure and sqrt(deformation) using linear regression"""
+    import math
+
+    current_pressure = g.delta_pressure
+    current_deformation_sqrt = math.sqrt(
+        max(g.deformation_in_mm, 0.001))  # Avoid division by zero
+
+    # Initialize data arrays if they don't exist
+    if not hasattr(g, 'pressure_history'):
+        g.pressure_history = []
+        g.deformation_sqrt_history = []
+
+    # Only collect data when we're in deformation phase
+    if g.sensor_touch_flag and g.deformation_in_mm > 0:
+        g.pressure_history.append(current_pressure)
+        g.deformation_sqrt_history.append(current_deformation_sqrt)
+
+        # Keep only recent data points (last 20 points for better performance)
+        max_points = 20
+        if len(g.pressure_history) > max_points:
+            g.pressure_history = g.pressure_history[-max_points:]
+            g.deformation_sqrt_history = g.deformation_sqrt_history[-max_points:]
+
+        # Calculate linear regression slope (y = mx, where y is pressure, x is sqrt(deformation))
+        if len(g.pressure_history) >= 2:
+            n = len(g.pressure_history)
+
+            # Calculate means
+            x_mean = sum(g.deformation_sqrt_history) / n
+            y_mean = sum(g.pressure_history) / n
+
+            # Calculate slope using least squares method: m = Σ(xi*yi) / Σ(xi²)
+            # For y = mx (no intercept), slope = Σ(xi*yi) / Σ(xi²)
+            numerator = sum(
+                x * y for x, y in zip(g.deformation_sqrt_history, g.pressure_history))
+            denominator = sum(x * x for x in g.deformation_sqrt_history)
+
+            if denominator != 0:
+                g.pressure_slope = numerator / denominator
+            else:
+                g.pressure_slope = 0.0
+        else:
+            g.pressure_slope = 0.0
+    else:
+        # Reset data arrays when not in deformation phase
+        if not g.sensor_touch_flag:
+            g.pressure_history = []
+            g.deformation_sqrt_history = []
+            g.pressure_slope = 0.0
+
+    # Update previous values for reference
+    g.previous_pressure = current_pressure
+    g.previous_deformation_sqrt = current_deformation_sqrt
+
+
 def runSensorLoop():
     while True:
 
@@ -90,6 +146,9 @@ def runSensorLoop():
             g.deformation_mm_entry.insert(
                 0, str("{:.4f}".format(g.deformation_in_mm)))
             g.export_deformation.append(g.deformation_in_mm)
+
+        # Calculate pressure slope for graphing
+        calculate_pressure_slope()
 
         current_time = datetime.datetime.now()
         formatted_time = current_time.strftime("%H:%M:%S.%f")

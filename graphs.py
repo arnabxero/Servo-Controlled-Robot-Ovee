@@ -14,16 +14,18 @@ class RealtimeGraphs:
         # Data storage (keep last 50 points for better performance)
         self.max_points = 50
         self.time_data = deque(maxlen=self.max_points)
-        self.sensor_data = deque(maxlen=self.max_points)
-        self.diameter_data = deque(maxlen=self.max_points)
+        self.pressure_data = deque(maxlen=self.max_points)
+        self.deformation_data = deque(maxlen=self.max_points)
+        self.slope_data = deque(maxlen=self.max_points)
 
         # Create the figure with subplots - smaller and simpler
         self.fig = Figure(figsize=(4.2, 7.5), dpi=70, facecolor='white')
         self.fig.subplots_adjust(hspace=0.5, left=0.2,
-                                 right=0.9, top=0.9, bottom=0.15)
+                                 right=0.8, top=0.9, bottom=0.15)
 
         # Create subplots
         self.ax1 = self.fig.add_subplot(211)
+        self.ax1_secondary = self.ax1.twinx()  # Secondary y-axis for deformation
         self.ax2 = self.fig.add_subplot(212)
 
         # Setup axes
@@ -46,18 +48,27 @@ class RealtimeGraphs:
         self.update_thread.start()
 
     def setup_axes(self):
-        # Sensor subplot
-        self.ax1.set_title('Sensor Value', fontsize=9)
-        self.ax1.set_ylabel('V', fontsize=8)
-        self.ax1.tick_params(labelsize=7)
+        # Pressure/Deformation subplot
+        self.ax1.set_title('Pressure & Deformation', fontsize=9)
+        self.ax1.set_ylabel('Pressure (kPa)', fontsize=8, color='blue')
+        self.ax1.tick_params(axis='y', labelcolor='blue', labelsize=7)
         self.ax1.grid(True, alpha=0.3, linewidth=0.5)
 
-        # Grasper gap subplot
-        self.ax2.set_title('Grasper Gap', fontsize=9)
+        # Secondary y-axis for deformation (positioned on right side)
+        self.ax1_secondary.set_ylabel(
+            'Deformation (mm)', fontsize=8, color='red')
+        self.ax1_secondary.tick_params(axis='y', labelcolor='red', labelsize=7)
+        self.ax1_secondary.yaxis.set_label_position('right')
+        self.ax1_secondary.yaxis.tick_right()
+
+        # Slope subplot
+        self.ax2.set_title('Pressure vs √Deformation Slope', fontsize=9)
         self.ax2.set_xlabel('Time (s)', fontsize=8)
-        self.ax2.set_ylabel('mm', fontsize=8)
+        self.ax2.set_ylabel('Slope', fontsize=8)
         self.ax2.tick_params(labelsize=7)
         self.ax2.grid(True, alpha=0.3, linewidth=0.5)
+
+    #########################
 
     def update_loop(self):
         """Separate thread for updating graphs - much slower than GUI"""
@@ -68,35 +79,63 @@ class RealtimeGraphs:
 
                 # Get current data
                 current_time = time.time() - self.start_time
-                sensor_value = getattr(g, 'sensor_value', 0.0)
-                diameter_mm = getattr(g, 'diameter_in_mm', 0.0)
+                pressure = getattr(g, 'delta_pressure', 0.0)
+
+                # Get deformation from the entry widget (same as what's displayed)
+                try:
+                    deformation_text = g.deformation_mm_entry.get()
+                    deformation = float(
+                        deformation_text) if deformation_text else 0.0
+                except:
+                    deformation = 0.0
+
+                slope = getattr(g, 'pressure_slope', 0.0)
 
                 # Add data points
                 self.time_data.append(current_time)
-                self.sensor_data.append(sensor_value)
-                self.diameter_data.append(diameter_mm)
+                self.pressure_data.append(pressure)
+                self.deformation_data.append(deformation)
+                self.slope_data.append(slope)
 
                 # Update plots (only if we have data)
                 if len(self.time_data) > 1:
-                    # Clear and replot (simple but effective)
+                    # Clear and replot
                     self.ax1.clear()
+                    self.ax1_secondary.clear()
                     self.ax2.clear()
 
-                    # Replot data
-                    self.ax1.plot(list(self.time_data), list(
-                        self.sensor_data), 'b-', linewidth=1.5)
+                    # Plot pressure on primary y-axis
+                    line1 = self.ax1.plot(list(self.time_data), list(
+                        self.pressure_data), 'b-', linewidth=1.5, label='Pressure')
+
+                    # Plot deformation on secondary y-axis
+                    line2 = self.ax1_secondary.plot(list(self.time_data), list(
+                        self.deformation_data), 'r-', linewidth=1.5, label='Deformation')
+
+                    # Plot slope
                     self.ax2.plot(list(self.time_data), list(
-                        self.diameter_data), 'g-', linewidth=1.5)
+                        self.slope_data), 'g-', linewidth=1.5)
 
                     # Reset titles and labels after clear
-                    self.ax1.set_title('Sensor Value', fontsize=9)
-                    self.ax1.set_ylabel('V', fontsize=8)
+                    self.ax1.set_title('Pressure & Deformation', fontsize=9)
+                    self.ax1.set_ylabel(
+                        'Pressure (kPa)', fontsize=8, color='blue')
+                    self.ax1.tick_params(
+                        axis='y', labelcolor='blue', labelsize=7)
                     self.ax1.grid(True, alpha=0.3, linewidth=0.5)
-                    self.ax1.tick_params(labelsize=7)
 
-                    self.ax2.set_title('Grasper Gap', fontsize=9)
+                    # Secondary y-axis for deformation (positioned on right side)
+                    self.ax1_secondary.set_ylabel(
+                        'Deformation (mm)', fontsize=8, color='red')
+                    self.ax1_secondary.tick_params(
+                        axis='y', labelcolor='red', labelsize=7)
+                    self.ax1_secondary.yaxis.set_label_position('right')
+                    self.ax1_secondary.yaxis.tick_right()
+
+                    self.ax2.set_title(
+                        'Pressure vs √Deformation Slope', fontsize=9)
                     self.ax2.set_xlabel('Time (s)', fontsize=8)
-                    self.ax2.set_ylabel('mm', fontsize=8)
+                    self.ax2.set_ylabel('Slope', fontsize=8)
                     self.ax2.grid(True, alpha=0.3, linewidth=0.5)
                     self.ax2.tick_params(labelsize=7)
 
@@ -112,26 +151,29 @@ class RealtimeGraphs:
                             self.ax1.set_xlim(time_min - 1, time_max + 1)
                             self.ax2.set_xlim(time_min - 1, time_max + 1)
 
-                    # Redraw canvas (less frequently)
+                    # Redraw canvas
                     try:
-                        self.canvas.draw_idle()  # Use draw_idle instead of draw
+                        self.canvas.draw_idle()
                     except:
-                        pass  # Ignore drawing errors
+                        pass
 
             except Exception as e:
                 print(f"Graph update error: {e}")
                 continue
+################################
 
     def clear_data(self):
         """Clear all graph data"""
         self.time_data.clear()
-        self.sensor_data.clear()
-        self.diameter_data.clear()
+        self.pressure_data.clear()
+        self.deformation_data.clear()
+        self.slope_data.clear()
         self.start_time = time.time()
 
         # Clear the plots
         try:
             self.ax1.clear()
+            self.ax1_secondary.clear()
             self.ax2.clear()
             self.setup_axes()
             self.canvas.draw_idle()
