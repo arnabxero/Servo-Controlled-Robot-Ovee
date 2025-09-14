@@ -150,6 +150,15 @@ def runSensorLoop():
         # Calculate pressure slope for graphing
         calculate_pressure_slope()
 
+        # Update the final value entry with live slope value
+        g.final_value_entry.delete(0, tk.END)
+        g.final_value_entry.insert(0, str("{:.4f}".format(g.pressure_slope)))
+
+        # Add slope to export data
+        if not hasattr(g, 'export_slope'):
+            g.export_slope = []
+        g.export_slope.append(g.pressure_slope)
+
         current_time = datetime.datetime.now()
         formatted_time = current_time.strftime("%H:%M:%S.%f")
         g.export_timestamp.append(formatted_time)

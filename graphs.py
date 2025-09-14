@@ -18,8 +18,9 @@ class RealtimeGraphs:
         self.deformation_data = deque(maxlen=self.max_points)
         self.slope_data = deque(maxlen=self.max_points)
 
-        # Create the figure with subplots - smaller and simpler
-        self.fig = Figure(figsize=(4.2, 7.5), dpi=70, facecolor='white')
+        # Create the figure with subplots - using configurable DPI from g.py
+        self.fig = Figure(figsize=(4.2, 7.5),
+                          dpi=g.graph_dpi, facecolor='white')
         self.fig.subplots_adjust(hspace=0.5, left=0.2,
                                  right=0.8, top=0.9, bottom=0.15)
 
@@ -47,11 +48,16 @@ class RealtimeGraphs:
             target=self.update_loop, daemon=True)
         self.update_thread.start()
 
+        # Print current DPI setting for user reference
+        print(f"Graph initialized with DPI: {g.graph_dpi}")
+
     def setup_axes(self):
         # Pressure/Deformation subplot
         self.ax1.set_title('Pressure & Deformation', fontsize=9)
         self.ax1.set_ylabel('Pressure (kPa)', fontsize=8, color='blue')
         self.ax1.tick_params(axis='y', labelcolor='blue', labelsize=7)
+        # Add this line for x-axis ticks
+        self.ax1.tick_params(axis='x', labelsize=7)
         self.ax1.grid(True, alpha=0.3, linewidth=0.5)
 
         # Secondary y-axis for deformation (positioned on right side)
@@ -68,14 +74,42 @@ class RealtimeGraphs:
         self.ax2.tick_params(labelsize=7)
         self.ax2.grid(True, alpha=0.3, linewidth=0.5)
 
-    #########################
+    def update_graph_resolution(self, new_dpi):
+        """Update the graph resolution dynamically"""
+        try:
+            # Update the global variable
+            g.graph_dpi = new_dpi
+
+            # Recreate the figure with new DPI
+            old_fig = self.fig
+            self.fig = Figure(figsize=(4.2, 7.5),
+                              dpi=new_dpi, facecolor='white')
+            self.fig.subplots_adjust(hspace=0.5, left=0.2,
+                                     right=0.8, top=0.9, bottom=0.15)
+
+            # Recreate subplots
+            self.ax1 = self.fig.add_subplot(211)
+            self.ax1_secondary = self.ax1.twinx()
+            self.ax2 = self.fig.add_subplot(212)
+
+            # Setup axes again
+            self.setup_axes()
+
+            # Update the canvas
+            self.canvas.figure = self.fig
+            self.canvas.draw()
+
+            print(f"Graph resolution updated to DPI: {new_dpi}")
+
+        except Exception as e:
+            print(f"Error updating graph resolution: {e}")
 
     def update_loop(self):
         """Separate thread for updating graphs - much slower than GUI"""
         while self.running:
             try:
                 # Only update every 2 seconds to reduce lag
-                time.sleep(2.0)
+                time.sleep(g.graph_update_delay)
 
                 # Get current data
                 current_time = time.time() - self.start_time
@@ -122,6 +156,8 @@ class RealtimeGraphs:
                         'Pressure (kPa)', fontsize=8, color='blue')
                     self.ax1.tick_params(
                         axis='y', labelcolor='blue', labelsize=7)
+                    # Add this line for x-axis ticks
+                    self.ax1.tick_params(axis='x', labelsize=7)
                     self.ax1.grid(True, alpha=0.3, linewidth=0.5)
 
                     # Secondary y-axis for deformation (positioned on right side)
@@ -160,7 +196,6 @@ class RealtimeGraphs:
             except Exception as e:
                 print(f"Graph update error: {e}")
                 continue
-################################
 
     def clear_data(self):
         """Clear all graph data"""
@@ -190,3 +225,16 @@ class RealtimeGraphs:
 def create_graphs(parent_widget):
     """Factory function to create and return graphs instance"""
     return RealtimeGraphs(parent_widget)
+
+
+def set_graph_resolution(dpi_value):
+    """Utility function to change graph resolution on the fly"""
+    try:
+        g.graph_dpi = int(dpi_value)
+        print(f"Graph DPI setting changed to: {g.graph_dpi}")
+        print("Note: Changes will take effect when graphs are recreated or application is restarted")
+        return True
+    except ValueError:
+        print(
+            f"Invalid DPI value: {dpi_value}. Please use a number (e.g., 70, 100, 150, 200)")
+        return False

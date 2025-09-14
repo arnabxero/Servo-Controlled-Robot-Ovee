@@ -32,7 +32,6 @@ gripper_steps = 0
 touch_point_diameter_mm = 0.0
 target_deformation_in_mm = 1.0
 
-
 # NEW: Step to diameter conversion factor
 # mm per step - this will convert steps to diameter change
 step_dia_mm_factor = 0.0055090095259956
@@ -96,3 +95,8 @@ previous_pressure = 0.0
 previous_deformation_sqrt = 0.0
 pressure_history = []
 deformation_sqrt_history = []
+# Graph Configuration Variables
+graph_dpi = 100  # Graph resolution (DPI) - adjust this value to change quality
+# Common values: 70 (low), 100 (standard), 150 (high), 200 (very high)
+# Higher values = better quality but more CPU usage
+graph_update_delay = 0.5  # Delay between graph updates in seconds

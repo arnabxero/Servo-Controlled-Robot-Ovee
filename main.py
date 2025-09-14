@@ -30,7 +30,7 @@ from runGripper import runGripperLoop
 from runServo import runServoLoop
 from graphs import create_graphs
 from utils import autoCalibrateDiameter
-from console_logger import logger, log_command, log_console
+from console_logger import logger, log_command, log_console, log_button_press, log_gripper_action
 
 
 current_datetime = datetime.datetime.now()
@@ -114,8 +114,11 @@ gripper_pause_button = Button(
     relief="flat"
 )
 
+# Gripper Pause button
 gripper_pause_button.bind(
-    "<Button-1>", lambda event: handleGripperButton(g.gripper_direction, False))
+    "<Button-1>", lambda event: (log_button_press("Gripper Pause"),
+                                 handleGripperButton(g.gripper_direction, False))
+)
 
 gripper_pause_button.place(
     x=469.0,
@@ -151,9 +154,11 @@ gripper_reset_button = Button(
     highlightthickness=0,
     relief="flat"
 )
-
+# Gripper Reset button
 gripper_reset_button.bind(
-    "<Button-1>", lambda event: resetGripper())
+    "<Button-1>", lambda event: (log_button_press("Reset Gripper"),
+                                 resetGripper())
+)
 
 gripper_reset_button.place(
     x=394.0,
@@ -1218,8 +1223,11 @@ gripper_close_button = Button(
     relief="flat"
 )
 
+# Gripper Close button
 gripper_close_button.bind(
-    "<Button-1>", lambda event: handleGripperButton(1, True))
+    "<Button-1>", lambda event: (log_button_press("Gripper Close"),
+                                 handleGripperButton(1, True))
+)
 
 gripper_close_button.place(
     x=394.0,
@@ -1237,8 +1245,11 @@ gripper_open_button = Button(
     relief="flat"
 )
 
+# Gripper Open button
 gripper_open_button.bind(
-    "<Button-1>", lambda event: handleGripperButton(2, True))
+    "<Button-1>", lambda event: (log_button_press("Gripper Open"),
+                                 handleGripperButton(2, True))
+)
 
 gripper_open_button.place(
     x=544.0,
