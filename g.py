@@ -8,7 +8,7 @@ board = None
 # Sensor Variables
 sensor = None
 sensor_value = 0.0
-sensor_idle_value = 0.67
+sensor_idle_value = 0.58
 sensor_touch_value = 0.05
 sensor_touch_flag = False
 sensor_to_pressure_factor = (6.895/0.8)
@@ -29,6 +29,9 @@ gripper_direction = 0
 gripper_active = False
 aftertouch_runtime = 0.0
 gripper_steps = 0
+touch_point_diameter_mm = 0.0
+target_deformation_in_mm = 1.0
+
 
 # NEW: Step to diameter conversion factor
 # mm per step - this will convert steps to diameter change
@@ -68,7 +71,7 @@ export_closing_time = []
 # Calculation Variables
 diameter_in_mm = 53.0  # Start with max diameter
 delta_pressure = 0.0
-deformation_in_mm = 0.0
+deformation_in_mm = 1.0
 
 # Export File Index
 fileNumber = 0
@@ -81,6 +84,7 @@ deformation_mm_entry = None
 live_sensor_value_entry = None
 delta_pressure_entry = None
 gripper_closing_time_entry = None
+final_value_entry = None
 
 # Servo Entry Variables (new)
 # Entry widgets for servo speeds

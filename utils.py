@@ -200,6 +200,9 @@ def resetGripper():
     g.gripper_starting_time = 0.0
     g.gripper_start_time_flag = False
 
+    # NEW: Reset touch point diameter
+    g.touch_point_diameter_mm = 0.0
+
     # Reset diameter to max (fully open)
     g.diameter_in_mm = g.max_diameter_mm
 

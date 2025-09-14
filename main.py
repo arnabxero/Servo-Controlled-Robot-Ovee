@@ -732,7 +732,7 @@ g.deformation_mm_entry.place(
 )
 
 canvas.create_text(
-    474.0,
+    384.0,
     234.0,
     anchor="nw",
     text="Live Sensor Value",
@@ -740,13 +740,45 @@ canvas.create_text(
     font=("Inter SemiBold", 14 * -1)
 )
 
+canvas.create_text(
+    579.0,
+    234.0,
+    anchor="nw",
+    text="Slope Value",
+    fill="#6F6F6F",
+    font=("Inter SemiBold", 14 * -1)
+)
+
+entry_image_final_val = PhotoImage(
+    file=relative_to_assets("entry_9.png"))
+entry_bg_final_val = canvas.create_image(
+    618.0,
+    270.5,
+    image=entry_image_final_val
+)
+
+g.final_value_entry = Entry(
+    bd=0,
+    bg="#D3FCFE",
+    fg="#000716",
+    highlightthickness=0
+)
+g.final_value_entry.place(
+    x=550.0,
+    y=253.0,
+    width=136.0,
+    height=33.0
+)
+
+
 entry_image_9 = PhotoImage(
     file=relative_to_assets("entry_9.png"))
 entry_bg_9 = canvas.create_image(
-    534.0,
+    446.0,
     270.5,
     image=entry_image_9
 )
+
 g.live_sensor_value_entry = Entry(
     bd=0,
     bg="#D3FCFE",
@@ -754,7 +786,7 @@ g.live_sensor_value_entry = Entry(
     highlightthickness=0
 )
 g.live_sensor_value_entry.place(
-    x=466.0,
+    x=378.0,
     y=253.0,
     width=136.0,
     height=33.0
@@ -1232,9 +1264,9 @@ canvas.create_rectangle(
     outline="")
 
 # Create the real-time graphs
-graphs = create_graphs(window)
+# graphs = create_graphs(window)
 
-logger.setup_widgets(canvas)
+# logger.setup_widgets(canvas)
 
 
 sensor_thread = threading.Thread(target=runSensorLoop)

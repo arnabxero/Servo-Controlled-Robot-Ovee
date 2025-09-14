@@ -41,7 +41,13 @@ def runSensorLoop():
         if ((g.sensor_value >= (g.sensor_idle_value + g.sensor_touch_value)) and (g.sensor_touch_flag == False) and (g.gripper_direction == 1)):
             g.time_of_touch = time.monotonic()
             g.sensor_touch_flag = True
+
+            # Record the diameter at touch point
+            g.touch_point_diameter_mm = g.diameter_in_mm
+
             print("Sensor Touched")
+            print(f"Touch point diameter: {g.touch_point_diameter_mm:.4f} mm")
+            print(f"Target deformation: {g.target_deformation_in_mm:.4f} mm")
             # UpdateConsole
             # UpdateLogger
 
@@ -71,12 +77,14 @@ def runSensorLoop():
         else:
             g.export_closing_time.append(0)
 
+        # FIXED: Only update the display deformation, not the target deformation
         if (g.sensor_touch_flag == False):
-            g.deformation_in_mm = 0
+            # Display 0 deformation when not touching
             g.deformation_mm_entry.delete(0, tk.END)
-            g.deformation_mm_entry.insert(0, 0)
+            g.deformation_mm_entry.insert(0, "0.0000")
             g.export_deformation.append(0)
         else:
+            # Calculate and display actual deformation
             g.deformation_in_mm = calcDeformationMM()
             g.deformation_mm_entry.delete(0, tk.END)
             g.deformation_mm_entry.insert(

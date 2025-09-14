@@ -28,4 +28,10 @@ def calcDiameterFromRunTime():
 
 
 def calcDeformationMM():
-    return g.aftertouch_runtime * 0.486
+    """Calculate actual deformation based on diameter change from touch point"""
+    if g.sensor_touch_flag == False:
+        return 0.0
+    else:
+        # Actual deformation = difference between touch point and current diameter
+        actual_deformation = g.touch_point_diameter_mm - g.diameter_in_mm
+        return max(0.0, actual_deformation)  #

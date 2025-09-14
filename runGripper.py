@@ -48,14 +48,19 @@ def runGripperLoop():
                 if ((g.sensor_touch_flag == False) and (g.gripper_start_time_flag == True)):
                     g.gripper_closing_time = (
                         time.monotonic() - g.gripper_starting_time)
-                    # print("Gripper Closing For: " + str(g.gripper_closing_time))
-                    # UpdateConsole
 
             moveMotor()
 
+            # Distance-based aftertouch control using TARGET deformation
             if (g.sensor_touch_flag == True):
-                if ((time.monotonic() - g.time_of_touch) > g.aftertouch_runtime):
+                # Calculate how much we've closed since touch
+                current_deformation = g.touch_point_diameter_mm - g.diameter_in_mm
+
+                # Use target_deformation_in_mm instead of deformation_in_mm
+                if (current_deformation >= g.target_deformation_in_mm):
                     g.gripper_active = False
+                    print(
+                        f"Aftertouch complete. Target deformation: {g.target_deformation_in_mm:.4f} mm, Actual: {current_deformation:.4f} mm")
                     continue
 
         end_time = time.monotonic()
