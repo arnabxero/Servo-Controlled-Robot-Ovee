@@ -53,10 +53,10 @@ pin_step_direction = 7
 pin_step_active = 6
 
 # Servo Control Variables (added from legacy)
-servo_pins = [8, 11, 10, 9, 12]  # Digital pins for servos
+servo_pins = [12, 11, 10, 9, 8]  # Digital pins for servos
 servo_direction = [0, 0, 0, 0, 0]  # 0=stop, 1=clockwise, 2=counterclockwise
 servo_speed = [1, 1, 1, 1, 1]     # Speed in degrees per step
-servo_default_positions = [52, 90, 0, 160, 70]  # Home positions for each servo
+servo_default_positions = [90, 90, 90, 90, 90]  # Home positions for each servo
 exit_flag = False  # Flag to stop all threads
 
 # Exporting Variables

@@ -1275,9 +1275,9 @@ canvas.create_rectangle(
     outline="")
 
 # Create the real-time graphs
-graphs = create_graphs(window)
+# graphs = create_graphs(window)
 
-logger.setup_widgets(canvas)
+# logger.setup_widgets(canvas)
 
 
 sensor_thread = threading.Thread(target=runSensorLoop)
