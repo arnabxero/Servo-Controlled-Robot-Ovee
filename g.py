@@ -56,7 +56,8 @@ pin_step_active = 6
 servo_pins = [12, 11, 10, 9, 8]  # Digital pins for servos
 servo_direction = [0, 0, 0, 0, 0]  # 0=stop, 1=clockwise, 2=counterclockwise
 servo_speed = [1, 1, 1, 1, 1]     # Speed in degrees per step
-servo_default_positions = [90, 90, 90, 90, 90]  # Home positions for each servo
+# Home positions for each servo
+servo_default_positions = [90, 91, 124, 108, 54]
 exit_flag = False  # Flag to stop all threads
 
 # Exporting Variables
